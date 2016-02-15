@@ -2,6 +2,8 @@ import {exists, writeFile} from 'fs';
 import {workspace, window} from 'vscode';
 import {Utils} from '../utils';
 
+const supportedProperties = ['indent_style', 'indent_size', 'tab_width'];
+
 /**
  * Generate an .editorconfig file in the root of the workspace based on the current vscode settings.
  */
@@ -17,20 +19,11 @@ export function generateEditorConfig() {
 		tabSize: editorConfigurationNode.get<string | number>('tabSize')
 	});
 
-	let fileContents =
-	`root = true
+	let fileContents = ['root = true', '', '[*]'];
 
-[*]
-`;
-
-	[
-		'indent_style',
-		'indent_size',
-		'tab_width'
-	].forEach(setting => {
+	supportedProperties.forEach(setting => {
 		if (settings.hasOwnProperty(setting)) {
-			fileContents += `${setting} = ${settings[setting]}
-`;
+			fileContents.push(`${setting} = ${settings[setting]}`);
 		}
 	});
 
@@ -42,7 +35,7 @@ export function generateEditorConfig() {
 			return;
 		}
 
-		writeFile(editorconfigFile, fileContents, err => {
+		writeFile(editorconfigFile, fileContents.join('\n'), err => {
 			if (err) {
 				window.showErrorMessage(err.toString());
 				return;
